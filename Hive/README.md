@@ -22,7 +22,7 @@ HDFS 一次写入多次读取
 
 ```
 
-#### hive几种基本表类型：内部表、外部表、分区表、桶表
+## hive几种基本表类型：内部表、外部表、分区表、桶表
 
 #### 内部表（管理表）和外部表的区别：
 
@@ -35,7 +35,7 @@ HDFS 一次写入多次读取
 
 #### 表类型一、管理表或内部表Table Type: MANAGED_TABLE
 
-```hive
+```sql
 create table if not exists dept(
 deptno int,
 deptname string,
@@ -57,7 +57,7 @@ Table Type:             MANAGED_TABLE 1234567891011121314151617
 
 #### 表类型二、外部表
 
-```
+```sql
 create  external table emp(
 empno int,
 empname string,
@@ -83,14 +83,14 @@ drop table dept;
 drop table emp;
 
 清空表数据
-truncate table student;1234567891011121314151617181920212223242526
+truncate table student;
 ```
 
 #### 表类型三、分区表
 
 分区表创建表的时候需要指定分区字段，分区字段与普通字段的区别：分区字段会在HDFS表目录下生成一个分区字段名称的目录，而普通字段则不会，查询的时候可以当成普通字段来使用，一般不直接和业务直接相关。
 
-```
+```sql
  create  table emp_part(
  empno int,
  empname string,
@@ -123,12 +123,12 @@ show partitions emp_part;
 aler table emp_part add [if not exist] partition(provine='zhejiang',city='hangzhou') 
 
 //删除分区
-aler table emp_part drop [if  exist] partition(provine='zhejiang',city='hangzhou')123456789101112131415161718192021222324252627282930313233
+aler table emp_part drop [if  exist] partition(provine='zhejiang',city='hangzhou')
 ```
 
 #### 外部分区表
 
-```
+```sql
 create external  table  dept_part(
 deptno int,
 deptname string,
@@ -142,7 +142,7 @@ location '/input/demo';
 alter table dept_part add partition (province='BOSTON') location '/input/demo/BOSTON';
 
 //手动增加分区字段（自动生成分区目录）
-alter table dept_part add partition (province='NEW YORK');1234567891011121314
+alter table dept_part add partition (province='NEW YORK');
 ```
 
 #### 表类型四：桶表
@@ -150,19 +150,19 @@ alter table dept_part add partition (province='NEW YORK');1234567891011121314
 将内部表，外部表和分区表进一步组织成桶表 
 可以将表的列通过Hash算法进一步分解成不同的文件存储
 
-```
+```sql
 create table test_bucket_table(
 id int,
 name string
 )
-clustered by (id) into 5 bucket;12345
+clustered by (id) into 5 bucket;
 ```
 
 #### 创建表的方式
 
 #### 方式一 create + load
 
-```
+```sql
     create [external] table table_name(
     col1_name col1_type,
     ...
@@ -171,22 +171,22 @@ clustered by (id) into 5 bucket;12345
     row  format delimited fields terminated  by '\t';
 
    //load加载数据
-    laod data [local] inpth '本地文件(linux)/HDFS' [overwrite] into table  table_name;123456789
+    laod data [local] inpth '本地文件(linux)/HDFS' [overwrite] into table  table_name;
 ```
 
 #### 方式二 like + load
 
-```
+```sql
     //复制表结构
     create table tableB like tableA;    //首先必须要有tableA
 
     //load加载数据
-    load data [local] inpth '本地文件(linux)/HDFS' [overwrite] into table  table_name;12345
+    load data [local] inpth '本地文件(linux)/HDFS' [overwrite] into table  table_name;
 ```
 
 #### 方式三 as 创建表的同时加载数据
 
-```
+```sql
 create table tableB row format delimited filelds termianted by ','  as select * from tableA;   //首先必须要有tableA
 
  create table emp_as row format delimited fields terminated by ',' as select empno,empname,salary from emp_part1;
@@ -195,7 +195,7 @@ create table tableB row format delimited filelds termianted by ','  as select * 
 
 #### 方式四 create + insert
 
-```
+```sql
 //创建表
 create table emp_insert(
 id int,
@@ -206,7 +206,7 @@ salary float
 row format  delimited fields terminated by ',';
 
 //insert into 加载数据
-insert into table emp_insert select empno,empname,empjob,salary from emp_part1 where day='20170308' and  hour='14';1234567891011
+insert into table emp_insert select empno,empname,empjob,salary from emp_part1 where day='20170308' and  hour='14';
 ```
 
 #### 加载数据的方式
@@ -279,7 +279,7 @@ location  'HDFS上的目录'
     3.hive -e 'HQL query'  >> test
     bin/hive -e 'select * from db01.student' >> test.txt
 
-    4)sqoop12345678910
+    4)sqoop
 ```
 
 #### Hive 自定义函数函数
@@ -305,7 +305,7 @@ UDTF 一进多出 ip -> 国家 省 市
 2. rank：上下两条记录的col2相等时，记录的行号是一样的，但下一个col2值的行号递增N（N是重复的次数），比如：有两条并列第一，下一个是第三，没有第二
 3. dense_rank：上下两条记录的col2相等时，下一个col2值的行号递增1，比如：有两条并列第一，下一个是第二
 
-### Hive优化
+## Hive优化
 
 - 1.fetch task任务不走MapReduce，可以在hive配置文件中设置最大化和最小化fetch task任务；通常在使用hiveserver2时调整为more；
 
@@ -368,7 +368,7 @@ Where
      t.t_hour = 8
      t.t_minute >= 30
      hd.hd_dep_count = 2
-order by cnt;12345678910
+order by cnt;
 ```
 
 - 4.MapReduce过程的map、shuffle、reduce端的snappy压缩
@@ -379,7 +379,7 @@ order by cnt;12345678910
 
 ```
 set mapreduce.output.fileoutputformat.compress=true;
-set mapreduce.output.fileoutputformat.compress.codec=org apache.hadoop.io.compress.SnappyCodec;12
+set mapreduce.output.fileoutputformat.compress.codec=org apache.hadoop.io.compress.SnappyCodec;
 ```
 
 - 5.大表拆分成子表，提取中间结果集，减少每次加载数据 
@@ -391,7 +391,7 @@ set mapreduce.output.fileoutputformat.compress.codec=org apache.hadoop.io.compre
 - 7.设置map和reduce个数：默认情况下一个块对应一个map任务，map数据我们一般不去调整，reduce个数根据reduce处理的数据量大小进行适当调整体现“分而治之”的思想
 
 ```
-    set mapred.reduce.tasks=3;1
+    set mapred.reduce.tasks=3;
 ```
 
 - 8.JVM重用：一个job可能有多个map reduce任务，每个任务会开启一个JVM虚拟机，默认情况下一个任务对应一个JVM，任务运行完JVM即销毁，我们可以设置JVM重用参数，一般不超过5个，这样一个JVM内可以连续运行多个任务
@@ -445,7 +445,7 @@ hive.groupby.skewindata=true;
   <name>hive.groupby.skewindata</name>
   <value>false</value>
   <description>Whether there is skew in data to optimize group by queries</description>
-</property>1234567
+</property>
 ```
 
 ```
@@ -455,7 +455,7 @@ hive.optimize.skewjoin.compiletime=true;
 <property>
   <name>hive.optimize.skewjoin.compiletime</name>
   <value>false</value>
-</property>  1234567
+</property>
 ```
 
 hive.optimize.skewjoin.compiletime=true; 如果是join过程出现倾斜应该设置为true 
@@ -491,14 +491,14 @@ mapjoin使用场景
 
 ```
 set hive.auto.convert.join=true;
-hive.mapjoin.smalltable.filesize=25;默认值是25mb   12
+hive.mapjoin.smalltable.filesize=25;默认值是25mb
 ```
 
 ```
 <property>
   <name>hive.mapjoin.smalltable.filesize</name>
   <value>25000000</value>
- </property>1234
+ </property>
 ```
 
 手动执行 A为小表 如果A表超过25M，还想使用map join; 
