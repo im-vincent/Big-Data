@@ -253,6 +253,18 @@ spark2-submit --name Record \
 
 
 
+## Spark Streaming核心
+
+### 核心概念
+
+- StreamingContext
+- DStrearm
+- Input Dstreams and Receivers
+
+除了文件系统，每个input DStream都有一个receiver。不要使用local local[1]
+
+
+
 ## Window Operations
 
 ![](https://spark.apache.org/docs/latest/img/streaming-dstream-window.png)
