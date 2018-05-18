@@ -24,25 +24,46 @@ Event = 可选的header + byte array
 
 
 
+![](http://flume.apache.org/_images/DevGuide_image00.png)
+
 内部有三个组件：
 
 1. Source：采集源，用于跟数据源对接，以获取数据
-2. Sink：下沉地，采集数据的传送目的，用于往下一级agent传递数据或者往最终存储系统传递数据
-3. Channel：angent内部的数据传输通道，用于从source将数据传递到sink
+2. Channel：angent内部的数据传输通道，用于从source将数据传递到sink
+3. Sink：下沉地，采集数据的传送目的，用于往下一级agent传递数据或者往最终存储系统传递数据
 
 
+```shell
+# example.conf: A single-node Flume configuration
 
-```bash
-# 基本配置
-example.conf
+# a1: agent名称
+# r1: source名称
+# k1: sink名称
+# c1: channel名称
 
-# 从日志获取
-exec-memory-logger.conf
+# Name the components on this agent
+a1.sources = r1
+a1.sinks = k1
+a1.channels = c1
 
-# 数据传递，a机器发送到b机器接收，然后输出到logger
-exec-memory-avro.conf
-avro-memory-logger.conf
+# Describe/configure the source
+a1.sources.r1.type = netcat
+a1.sources.r1.bind = localhost
+a1.sources.r1.port = 44444
+
+# Describe the sink
+a1.sinks.k1.type = logger
+
+# Use a channel which buffers events in memory
+a1.channels.c1.type = memory
+
+# Bind the source and sink to the channel
+a1.sources.r1.channels = c1 # a1的的source要发送到那个channel上。
+a1.sinks.k1.channel = c1 # a1的sinks要从那个channel接受数据
+
 ```
+
+
 
 
 
