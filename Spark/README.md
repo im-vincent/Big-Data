@@ -341,3 +341,4 @@ Configuring Flume on the chosen machine requires the following two steps.
    `flume_pull_streaming.conf`
 
    案例代码 FlumePullWordCount
+

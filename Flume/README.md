@@ -63,10 +63,6 @@ a1.sinks.k1.channel = c1 # a1的sinks要从那个channel接受数据
 
 ```
 
-
-
-
-
 启动方法
 
 ```bash
