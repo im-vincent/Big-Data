@@ -74,3 +74,235 @@ $ bin/flume-ng agent --conf $FLUME_HOME/conf \
 
 
 
+
+
+-------
+
+TAILDIR
+
+```shell
+#-->设置sources名称
+a1.sources = sources1
+#--> 设置channel名称
+a1.channels = fileChannel
+#--> 设置sink 名称
+a1.sinks = sink1
+
+# source 配置
+a1.sources.sources1.type = TAILDIR
+a1.sources.sources1.positionFile = /tmp/flume/taildir_position.json
+a1.sources.sources1.filegroups = f1
+a1.sources.sources1.filegroups.f1 = /u01/app/oracle/diag/rdbms/orcl/orcl/trace/alert_.*.log
+a1.sources.sources1.batchSize = 100
+a1.sources.sources1.backoffSleepIncrement = 1000
+a1.sources.sources1.maxBackoffSleep = 5000
+a1.sources.sources1.channels = fileChannel
+a1.sources.sources1.headers.f1.headerKey = ora31
+a1.sources.sources1.fileHeader = true
+
+
+# sink1 配置
+a1.sinks.sink1.type = file_roll
+a1.sinks.sink1.sink.directory = /tmp/flume/flumefiles
+a1.sinks.sink1.sink.rollInterval = 0
+a1.sinks.sink1.channel = fileChannel
+
+# fileChannel 配置
+a1.channels.fileChannel.type = file
+#-->检测点文件所存储的目录
+a1.channels.fileChannel.checkpointDir = /tmp/flume/checkpoint/oracle_alert/
+#-->数据存储所在的目录设置
+a1.channels.fileChannel.dataDirs = /tmp/flume/data/oracle_alert/
+#-->隧道的最大容量
+a1.channels.fileChannel.capacity = 10000
+#-->事务容量的最大值设置
+a1.channels.fileChannel.transactionCapacity = 200
+```
+
+
+
+kafka sink
+
+```shell
+#-->设置sources名称
+a1.sources = sources1
+#--> 设置channel名称
+a1.channels = fileChannel
+#--> 设置sink 名称
+a1.sinks = sink1
+
+# source 配置
+a1.sources.sources1.type = TAILDIR
+a1.sources.sources1.positionFile = /tmp/flume/taildir_position.json
+a1.sources.sources1.filegroups = f1
+a1.sources.sources1.filegroups.f1 = /u01/app/oracle/diag/rdbms/orcl/orcl/trace/alert_.*.log
+a1.sources.sources1.batchSize = 100
+a1.sources.sources1.backoffSleepIncrement = 1000
+a1.sources.sources1.maxBackoffSleep = 5000
+a1.sources.sources1.channels = fileChannel
+a1.sources.sources1.headers.f1.headerKey = ora31
+a1.sources.sources1.fileHeader = true
+
+
+# sink1 配置
+a1.sinks.sink1.channel = fileChannel
+a1.sinks.sink1.type = org.apache.flume.sink.kafka.KafkaSink
+a1.sinks.sink1.kafka.topic = mytopic
+a1.sinks.sink1.kafka.bootstrap.servers = 10.117.130.146:9092
+a1.sinks.sink1.kafka.flumeBatchSize = 100
+a1.sinks.sink1.kafka.producer.acks = 1
+a1.sinks.sink1.kafka.producer.linger.ms = 1
+a1.sinks.sink1.kafka.producer.compression.type = snappy
+
+# fileChannel 配置
+a1.channels.fileChannel.type = file
+#-->检测点文件所存储的目录
+a1.channels.fileChannel.checkpointDir = /tmp/flume/checkpoint/oracle_alert/
+#-->数据存储所在的目录设置
+a1.channels.fileChannel.dataDirs = /tmp/flume/data/oracle_alert/
+#-->隧道的最大容量
+a1.channels.fileChannel.capacity = 10000
+#-->事务容量的最大值设置
+a1.channels.fileChannel.transactionCapacity = 200
+```
+
+
+
+kafka channel
+
+```shell
+#-->设置sources名称
+a1.sources = sources1
+#--> 设置channel名称
+a1.channels = channel1
+#--> 设置sink 名称
+a1.sinks = sink1
+
+# source 配置
+a1.sources.sources1.type = TAILDIR
+a1.sources.sources1.positionFile = /tmp/flume/taildir_position.json
+a1.sources.sources1.filegroups = f1
+a1.sources.sources1.filegroups.f1 = /u01/app/oracle/diag/rdbms/orcl/orcl/trace/alert_.*.log
+a1.sources.sources1.batchSize = 100
+a1.sources.sources1.backoffSleepIncrement = 1000
+a1.sources.sources1.maxBackoffSleep = 5000
+a1.sources.sources1.channels = channel1
+a1.sources.sources1.headers.f1.headerKey = ora31
+a1.sources.sources1.fileHeader = true
+
+
+# sink1 配置
+a1.sinks.sink1.channel = channel1
+a1.sinks.sink1.type = org.apache.flume.sink.kafka.KafkaSink
+a1.sinks.sink1.kafka.topic = mytopic
+a1.sinks.sink1.kafka.bootstrap.servers = node02:9092
+a1.sinks.sink1.kafka.flumeBatchSize = 100
+a1.sinks.sink1.kafka.producer.acks = 1
+a1.sinks.sink1.kafka.producer.linger.ms = 1
+a1.sinks.sink1.kafka.producer.compression.type = snappy
+
+# kafka channel 配置
+a1.channels.channel1.type = org.apache.flume.channel.kafka.KafkaChannel
+a1.channels.channel1.kafka.bootstrap.servers = node02:9092
+a1.channels.channel1.kafka.topic = channel2
+a1.channels.channel1.kafka.consumer.group.id = flume-consumer
+```
+
+
+
+拦截器
+
+```shell
+#-->设置sources名称
+a1.sources = sources1
+#--> 设置channel名称
+a1.channels = channel1
+#--> 设置sink 名称
+a1.sinks = sink1
+
+# source 配置
+a1.sources.sources1.type = TAILDIR
+a1.sources.sources1.positionFile = /tmp/flume/taildir_position.json
+a1.sources.sources1.filegroups = f1
+a1.sources.sources1.filegroups.f1 = /u01/app/oracle/diag/rdbms/orcl/orcl/trace/alert_.*.log
+a1.sources.sources1.batchSize = 100
+a1.sources.sources1.backoffSleepIncrement = 1000
+a1.sources.sources1.maxBackoffSleep = 5000
+a1.sources.sources1.channels = channel1
+a1.sources.sources1.headers.f1.headerKey = ora31
+a1.sources.sources1.fileHeader = true
+# 设置拦截器
+a1.sources.sources1.interceptors = i1
+a1.sources.sources1.interceptors.i1.type = regex_filter
+a1.sources.sources1.interceptors.i1.regex = ^ORA-.*
+a1.sources.sources1.interceptors.i1.excludeEvents = false
+
+
+# sink1 配置
+a1.sinks.sink1.channel = channel1
+a1.sinks.sink1.type = org.apache.flume.sink.kafka.KafkaSink
+a1.sinks.sink1.kafka.topic = mytopic
+a1.sinks.sink1.kafka.bootstrap.servers = node02:9092
+a1.sinks.sink1.kafka.flumeBatchSize = 100
+a1.sinks.sink1.kafka.producer.acks = 1
+a1.sinks.sink1.kafka.producer.linger.ms = 1
+a1.sinks.sink1.kafka.producer.compression.type = snappy
+
+# kafka channel 配置
+a1.channels.channel1.type = org.apache.flume.channel.kafka.KafkaChannel
+a1.channels.channel1.kafka.bootstrap.servers = node02:9092
+a1.channels.channel1.kafka.topic = channel2
+a1.channels.channel1.kafka.consumer.group.id = flume-consumer
+
+```
+
+
+
+es
+
+```shell
+#-->设置sources名称
+a1.sources = sources1
+#--> 设置channel名称
+a1.channels = channel1
+#--> 设置sink 名称
+a1.sinks = sink1
+
+# source 配置
+a1.sources.sources1.type = TAILDIR
+a1.sources.sources1.positionFile = /tmp/flume/taildir_position.json
+a1.sources.sources1.filegroups = f1
+a1.sources.sources1.filegroups.f1 = /u01/app/oracle/diag/rdbms/orcl/orcl/trace/alert_.*.log
+a1.sources.sources1.batchSize = 100
+a1.sources.sources1.backoffSleepIncrement = 1000
+a1.sources.sources1.maxBackoffSleep = 5000
+a1.sources.sources1.channels = channel1
+a1.sources.sources1.headers.f1.headerKey = ora31
+a1.sources.sources1.fileHeader = true
+
+
+# sink1 配置
+a1.channels = channel1
+a1.sinks = sink1
+a1.sinks.sink1.type = elasticsearch
+a1.sinks.sink1.hostNames = 10.117.130.176:9300 #这里不能按照文档写9200、9300
+a1.sinks.sink1.indexName = foo_index
+a1.sinks.sink1.indexType = bar_type
+a1.sinks.sink1.clusterName = foobar_cluster
+a1.sinks.sink1.batchSize = 500
+a1.sinks.sink1.ttl = 5d
+a1.sinks.sink1.serializer = org.apache.flume.sink.elasticsearch.ElasticSearchDynamicSerializer
+a1.sinks.sink1.channel = channel1
+	
+# kafka channel 配置
+a1.channels.channel1.type = org.apache.flume.channel.kafka.KafkaChannel
+a1.channels.channel1.kafka.bootstrap.servers = node02:9092
+a1.channels.channel1.kafka.topic = channel2
+a1.channels.channel1.kafka.consumer.group.id = flume-consumer
+```
+
+
+
+oom
+
+调整flume-ng 启动文件里面有关于内存的参数

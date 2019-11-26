@@ -406,7 +406,7 @@ hadoop.apache.org/docs/r2.5.2/hadoop-mapreduce-client/hadoop-mapreduce-client-co
 也可在hive的执行设置：
 
 ```
-***set mapred.job.reuse.jvm.num.tasks=10;
+set mapred.job.reuse.jvm.num.tasks=10;
 hive (default)> set mapred.job.reuse.jvm.num.tasks;
 mapred.job.reuse.jvm.num.tasks=1123
 ```
@@ -524,7 +524,189 @@ SMB 存在的目的主要是为了解决大表与大表间的 Join 问题，分�
 
 ```
 set hive.enforce.bucketing=true;
-set hive.enforce.sorting=true;12
+set hive.enforce.sorting=true;
 ```
 
 表优化数据目标：相同数据尽量聚集在一起
+
+
+
+#### 合并小文件
+
+orc数据格式可以使用`concatenate`
+
+使用`concatenate`命令针对`20180505`分区进行小文件合并：
+
+```
+alter table app.example_orc partition (dt="20180505") concatenate;
+```
+
+不足点：
+
+1. 使用`concatenate`命令合并小文件时不能指定合并后的文件数量，虽然可以多次执行该命令，但显然不够优雅。当多次使用`concatenate`后文件数量不在变化，这个跟参数`mapreduce.input.fileinputformat.split.minsize=256mb`的设定有有有关，可设定每个文件的最小size，具体间链接4；
+2. 只能针对分区使用`concatenate`命令。
+
+
+
+原表->备份表->新表
+
+```bash
+# 新建备表，表结构与原表保持一致
+create table test_part_bak like test_part; 
+
+# 设置如下参数,使支持合并
+SET hive.merge.mapfiles = true;
+SET hive.merge.mapredfiles = true;
+SET hive.merge.size.per.task = 268435456;
+SET hive.merge.smallfiles.avgsize = 134217728;
+SET hive.exec.compress.output = true;
+SET parquet.compression = snappy;
+SET hive.exec.dynamic.partition.mode = nonstrict;
+SET hive.exec.dynamic.partition = true;
+
+# 使用insert overwrite语句查询原表数据覆盖备表
+insert overwrite table test_part_bak partition(date_str) select * from test_part;
+
+# 删除原表，将备用表表名修改为原表名
+alter table test_part_bak rename to test_part;
+
+```
+
+
+
+
+
+```
+create table ontime_parquet_lzo STORED AS PARQUET TBLPROPERTIES("parquet.compression"="lzo") as select * from ontime_parquet;
+
+sudo -u hdfs hadoop fs -chown hive:hive  /user/hive/warehouse/ontime/
+
+```
+
+````
+CREATE TABLE `default.ontime_parquet_lzo_partition`(
+  `quarter` int, 
+  `month` int, 
+  `dayofmonth` int, 
+  `dayofweek` int, 
+  `flightdate` string, 
+  `uniquecarrier` string, 
+  `airlineid` string, 
+  `carrier` string, 
+  `tailnum` string, 
+  `flightnum` string, 
+  `originairportid` string, 
+  `originairportseqid` string, 
+  `origincitymarketid` string, 
+  `origin` string, 
+  `origincityname` string, 
+  `originstate` string, 
+  `originstatefips` string, 
+  `originstatename` string, 
+  `originwac` string, 
+  `destairportid` string, 
+  `destairportseqid` string, 
+  `destcitymarketid` string, 
+  `dest` string, 
+  `destcityname` string, 
+  `deststate` string, 
+  `deststatefips` string, 
+  `deststatename` string, 
+  `destwac` string, 
+  `crsdeptime` string, 
+  `deptime` string, 
+  `depdelay` float, 
+  `depdelayminutes` float, 
+  `depdel15` float, 
+  `departuredelaygroups` int, 
+  `deptimeblk` string, 
+  `taxiout` float, 
+  `wheelsoff` string, 
+  `wheelson` string, 
+  `taxiin` float, 
+  `crsarrtime` string, 
+  `arrtime` string, 
+  `arrdelay` float, 
+  `arrdelayminutes` float, 
+  `arrdel15` float, 
+  `arrivaldelaygroups` int, 
+  `arrtimeblk` string, 
+  `cancelled` float, 
+  `cancellationcode` string, 
+  `diverted` float, 
+  `crselapsedtime` float, 
+  `actualelapsedtime` float, 
+  `airtime` float, 
+  `flights` float, 
+  `distance` float, 
+  `distancegroup` float, 
+  `carrierdelay` float, 
+  `weatherdelay` float, 
+  `nasdelay` float, 
+  `securitydelay` float, 
+  `lateaircraftdelay` float, 
+  `firstdeptime` string, 
+  `totaladdgtime` float, 
+  `longestaddgtime` float, 
+  `divairportlandings` string, 
+  `divreacheddest` float, 
+  `divactualelapsedtime` float, 
+  `divarrdelay` float, 
+  `divdistance` float, 
+  `div1airport` string, 
+  `div1airportid` string, 
+  `div1airportseqid` string, 
+  `div1wheelson` string, 
+  `div1totalgtime` float, 
+  `div1longestgtime` float, 
+  `div1wheelsoff` string, 
+  `div1tailnum` string, 
+  `div2airport` string, 
+  `div2airportid` string, 
+  `div2airportseqid` string, 
+  `div2wheelson` string, 
+  `div2totalgtime` float, 
+  `div2longestgtime` float, 
+  `div2wheelsoff` string, 
+  `div2tailnum` string, 
+  `div3airport` string, 
+  `div3airportid` string, 
+  `div3airportseqid` string, 
+  `div3wheelson` string, 
+  `div3totalgtime` float, 
+  `div3longestgtime` float, 
+  `div3wheelsoff` string, 
+  `div3tailnum` string, 
+  `div4airport` string, 
+  `div4airportid` string, 
+  `div4airportseqid` string, 
+  `div4wheelson` string, 
+  `div4totalgtime` float, 
+  `div4longestgtime` float, 
+  `div4wheelsoff` string, 
+  `div4tailnum` string, 
+  `div5airport` string, 
+  `div5airportid` string, 
+  `div5airportseqid` string, 
+  `div5wheelson` string, 
+  `div5totalgtime` float, 
+  `div5longestgtime` float, 
+  `div5wheelsoff` string, 
+  `div5tailnum` string) 
+  partitioned by (`year` int)
+  ROW FORMAT DELIMITED
+  FIELDS TERMINATED BY ','
+  stored as parquet tblproperties('parquet.compression'='lzo');
+
+--TBLPROPERTIES ("orc.compress"="snappy");
+````
+
+`desc formatted ontime_orc;`
+
+```
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nonstrict; 
+set hive.exec.max.dynamic.partitions=100000;
+set hive.exec.max.dynamic.partitions.pernode=100000;
+```
+
